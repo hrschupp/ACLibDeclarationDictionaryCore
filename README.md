@@ -4,7 +4,7 @@ This Add-In lists all VBA declarations (variables, function names, constants, et
 ## API
 
 ### RunVcsCheck([OpenDialogToFixLettercase], [DeclDictFilePath]) As Variant
-Compare lettercase from CurrentVbProject with saved (table/file) dictionary items
+Compare lettercase from CurrentVbProject with saved file dictionary items
  
 #### Parameters
 - OpenDialogToFixLettercase - (Boolean) - Open dialog to fix lettercase
