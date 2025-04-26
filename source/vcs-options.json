@@ -9,7 +9,7 @@
     "UseFastSave": true,
     "UseMergeBuild": false,
     "UseGitIntegration": false,
-    "SavePrintVars": true,
+    "SavePrintVars": false,
     "ExportPrintSettings": {
       "Orientation": true,
       "PaperSize": true,
@@ -42,6 +42,9 @@
     "SanitizeLevel": 2,
     "ExtractThemeFiles": false,
     "TablesToExportData": {
+      "USysAPI": {
+        "Format": "XML Format"
+      },
       "USysRegInfo": {
         "Format": "Tab Delimited"
       },
