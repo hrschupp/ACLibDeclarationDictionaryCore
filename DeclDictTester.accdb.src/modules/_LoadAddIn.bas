@@ -1,8 +1,15 @@
 ﻿Attribute VB_Name = "_LoadAddIn"
+'---------------------------------------------------------------------------------------
+' Module: _LoadAddIn
+'---------------------------------------------------------------------------------------
+'
+' API examples
+'
+'-------------------------------------------------------------------------
 Option Compare Database
 Option Explicit
 
-Public Sub LoadAddIn()
+Public Sub LoadAddIn_RunVcsCheck()
 
 'API: RunVcsCheck(Optional ByVal OpenDialogToFixLettercase As Boolean = False)
 
