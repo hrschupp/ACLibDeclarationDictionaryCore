@@ -17,8 +17,6 @@ Attribute VB_Exposed = False
 Option Compare Database
 Option Explicit
 
-'AccUnit:TestRelated
-
 Implements ITestInterface
 
 Dim AccUnitX As Long

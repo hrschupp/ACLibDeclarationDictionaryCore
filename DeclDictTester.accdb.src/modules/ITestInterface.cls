@@ -17,8 +17,6 @@ Attribute VB_Exposed = False
 Option Compare Database
 Option Explicit
 
-'AccUnit:TestRelated
-
 Public Sub TestMe()
 '
 End Sub
