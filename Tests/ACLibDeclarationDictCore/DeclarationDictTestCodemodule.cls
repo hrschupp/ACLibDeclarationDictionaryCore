@@ -106,6 +106,20 @@ Private Static Sub MyStaticSub(Optional ByVal Reset As Boolean = False)
     Static Counter2 As Integer
 End Sub
 
+Private Sub TestPullrequest8_LineLabels()
+
+On Error GoTo ErrHandler
+
+
+ExitHere:
+   Exit Sub
+
+ErrHandler:
+
+
+
+End Sub
+
 '---------------------------
 ' Implement ITestInterface interface
 '
