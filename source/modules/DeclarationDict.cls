@@ -15,6 +15,7 @@ Option Explicit
 Private m_Words As Scripting.Dictionary
 Private m_WordVariations As Scripting.Dictionary
 Private m_DiffCnt As Long
+Private m_bolExtended As Boolean
 
 Public Event WordInserted(ByVal WordKey As String)
 Public Event WordChanged(ByVal WordKey As String)
@@ -53,6 +54,10 @@ Public Property Get DiffCount() As Long
       m_DiffCnt = GetDiffCnt
    End If
    DiffCount = m_DiffCnt
+End Property
+
+Public Property Let ExtendedRecognition(bolExtended As Boolean)
+    m_bolExtended = bolExtended
 End Property
 
 Private Function GetDiffCnt() As Long
@@ -176,18 +181,25 @@ Public Sub ImportCode(ByVal Code As String)
 
    Const ProcIndex As Long = 0
    Const EnumTypeIndex As Long = 1
+   Const DimIndex As Long = 2
 
-   Dim Patterns(2) As String
+   Dim Patterns(3) As String
 
    Patterns(ProcIndex) = "(?:\r|\n|^)\s*(?:Sub|Function|Property Get|Property Let|Property Set|Event)\s+([^\r\n]*)"
    Patterns(EnumTypeIndex) = "(?:\r|\n|^)\s*(?:Enum|Type)([\s\S]*?)(?:End\s+(?:Enum|Type))"
    Patterns(2) = "(?:\r|\n|^)\s*(?:Dim|ReDim|Private|Friend|Public|Const|Static|Global|Implements)\s+([^\r\n]*)"
+   Patterns(3) = "(?:[.!])([^0-9\s.!_\(\)\[\]\r\n][^\s.!\(\)\[\]\r\n]*)(?:\s|[.!\(\)\[\]\r\n]|$)"
 
    Dim i As Long
-   For i = 0 To UBound(Patterns)
+   For i = 0 To UBound(Patterns) - 1
       RegEx.Pattern = Patterns(i)
-      AddFromCode Code, RegEx, i = ProcIndex, i = EnumTypeIndex
+      AddFromCode Code, RegEx, i = ProcIndex, i = EnumTypeIndex, i = DimIndex
    Next
+   Debug.Assert i = UBound(Patterns)
+   If m_bolExtended Then
+      RegEx.Pattern = Patterns(i)
+      AddFromCode Code, RegEx, False, False, False 'i = ProcIndex, i = EnumTypeIndex, i = DimIndex
+   End If
 
 End Sub
 
@@ -263,20 +275,20 @@ Private Function PrepareCode(ByVal Code As String, ByVal RegEx As RegExp) As Str
 
 End Function
 
-Private Sub AddFromCode(ByVal Code As String, ByVal RegEx As RegExp, ByVal IsProcedure As Boolean, ByVal IsEnumTypeBlock As Boolean)
+Private Sub AddFromCode(ByVal Code As String, ByVal RegEx As RegExp, ByVal IsProcedure As Boolean, ByVal IsEnumTypeBlock As Boolean, ByVal IsDimBlock As Boolean)
 
    Dim Match As Match
    Dim i As Long
 
    For Each Match In RegEx.Execute(Code)
       For i = 0 To Match.SubMatches.Count - 1
-         AddWordFromDeclaration Match.SubMatches(i), IsProcedure, IsEnumTypeBlock
+         AddWordFromDeclaration Match.SubMatches(i), IsProcedure, IsEnumTypeBlock, IsDimBlock
       Next
    Next
 
 End Sub
 
-Private Sub AddWordFromDeclaration(ByRef Declarations As String, ByVal IsProcedure As Boolean, ByVal IsEnumTypeBlock As Boolean)
+Private Sub AddWordFromDeclaration(ByRef Declarations As String, ByVal IsProcedure As Boolean, ByVal IsEnumTypeBlock As Boolean, ByVal IsDimBlock As Boolean)
 
    Dim Word As String
    Dim i As Long
@@ -311,7 +323,7 @@ Private Sub AddWordFromDeclaration(ByRef Declarations As String, ByVal IsProcedu
       Declarations = Replace(Declarations, "  ", " ")
    Loop
 
-   If Not IsProcedure And Not IsEnumTypeBlock Then
+   If IsDimBlock Then
       Do While Declarations Like "*(*,*)*"
          ' prevent multi-dimensional Dim from transforming into new declarations (might be numeric)
          Pos = InStr(1, Declarations, "(")
