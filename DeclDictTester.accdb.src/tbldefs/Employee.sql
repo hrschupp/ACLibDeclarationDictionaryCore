@@ -1,0 +1,6 @@
+﻿CREATE TABLE [Employee] (
+  [ID] AUTOINCREMENT CONSTRAINT [PrimaryKey] PRIMARY KEY UNIQUE NOT NULL,
+  [LastName] VARCHAR (255),
+  [FirstName] VARCHAR (255),
+  [Position] VARCHAR (255)
+)
