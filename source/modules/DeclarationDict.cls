@@ -188,7 +188,7 @@ Public Sub ImportCode(ByVal Code As String)
    Patterns(ProcIndex) = "(?:\r|\n|^)\s*(?:Sub|Function|Property Get|Property Let|Property Set|Event)\s+([^\r\n]*)"
    Patterns(EnumTypeIndex) = "(?:\r|\n|^)\s*(?:Enum|Type)([\s\S]*?)(?:End\s+(?:Enum|Type))"
    Patterns(2) = "(?:\r|\n|^)\s*(?:Dim|ReDim|Private|Friend|Public|Const|Static|Global|Implements)\s+([^\r\n]*)"
-   Patterns(3) = "(?:[.!])([^0-9\s.!_\(\)\[\]\r\n][^\s.!\(\)\[\]\r\n]*)(?:\s|[.!\(\)\[\]\r\n]|$)"
+   Patterns(3) = "(?:[.!])([^0-9\s.!_,\(\)\[\]\r\n][^\s.!,\(\)\[\]\r\n]*|\[.+\])"
 
    Dim i As Long
    For i = 0 To UBound(Patterns) - 1
@@ -354,6 +354,13 @@ Private Function CutPos(ByVal Expression As String) As Long
 
    Const CutChars As String = " ()"
 
+   If Left(Expression, 1) = "[" Then
+      If Right(Expression, 1) = "]" Then
+         CutPos = 0
+         Exit Function
+      End If
+   End If
+
    Dim i As Long
 
    For i = 1 To Len(CutChars)
@@ -484,13 +491,32 @@ Public Sub FixLetterCase(ByVal WordWithNewLetterCase As String)
 
     With New CodeModulGenerator
         .CreateCodemodule vbext_ct_StdModule
-        .InsertDeclarationLine "Private " & WordWithNewLetterCase
+        '.InsertDeclarationLine "Private " & WordWithNewLetterCase
+        If Not IsWeirdReference(WordWithNewLetterCase) Then
+            .InsertDeclarationLine "Private Type ACLibDeclarationDict_DummyType"
+            .InsertDeclarationLine WordWithNewLetterCase & " As Variant"
+            .InsertDeclarationLine "End Type"
+        Else
+            .InsertDeclarationLine "Private Sub ACLibDeclarationDict_DummySub"
+            .InsertDeclarationLine "ACLibDeclarationDict_DummyVar![" & WordWithNewLetterCase & "] = 0"
+            .InsertDeclarationLine "End Sub"
+        End If
         .RemoveCodemodule
     End With
 
     AddWord WordWithNewLetterCase
 
 End Sub
+
+Private Function IsWeirdReference(ByRef WordWithNewLetterCase As String) As Boolean
+    Dim i As Integer
+    For i = 1 To Len(WordWithNewLetterCase)
+        If Asc(Mid(WordWithNewLetterCase, i, 1)) <= 32 Then
+            IsWeirdReference = True
+            Exit Function
+        End If
+    Next i
+End Function
 
 Public Function LoadFromTable(ByVal TableName As String, Optional ByRef ErrorMsg As String) As Boolean
 
